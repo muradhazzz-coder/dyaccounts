@@ -29,6 +29,8 @@ function getDb() {
         username TEXT NOT NULL UNIQUE,
         password_hash TEXT NOT NULL,
         full_name TEXT NOT NULL,
+        phone TEXT,
+        repeater TEXT,
         created_at TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP
       );
 
@@ -59,6 +61,8 @@ function getDb() {
       );
     `);
 
+    ensureColumn(globalForDb.db, "users", "phone", "TEXT");
+    ensureColumn(globalForDb.db, "users", "repeater", "TEXT");
     ensureColumn(globalForDb.db, "credit_requests", "source", "TEXT NOT NULL DEFAULT 'request'");
     ensureColumn(globalForDb.db, "credit_requests", "note", "TEXT");
 
@@ -105,6 +109,8 @@ export type UserRecord = {
   username: string;
   password_hash: string;
   full_name: string;
+  phone: string | null;
+  repeater: string | null;
   created_at: string;
 };
 
@@ -142,6 +148,8 @@ export type CustomerExportRecord = {
   id: number;
   fullName: string;
   username: string;
+  phone: string | null;
+  repeater: string | null;
   createdAt: string;
   totalApproved: number;
   totalPaid: number;
@@ -191,6 +199,8 @@ export function getAdminDashboardData() {
         users.id,
         users.full_name as fullName,
         users.username,
+        users.phone,
+        users.repeater,
         users.created_at as createdAt,
         COALESCE((
           SELECT SUM(amount)
@@ -216,6 +226,8 @@ export function getAdminDashboardData() {
     id: number;
     fullName: string;
     username: string;
+    phone: string | null;
+    repeater: string | null;
     createdAt: string;
     totalApproved: number;
     totalPaid: number;
@@ -353,14 +365,21 @@ export function getCustomerDashboardData(customerId: number) {
   const customer = database
     .prepare(
       `
-      SELECT id, full_name as fullName, username, created_at as createdAt
+      SELECT id, full_name as fullName, username, phone, repeater, created_at as createdAt
       FROM users
       WHERE id = ? AND role = 'customer'
       LIMIT 1
     `,
     )
     .get(customerId) as
-    | { id: number; fullName: string; username: string; createdAt: string }
+    | {
+        id: number;
+        fullName: string;
+        username: string;
+        phone: string | null;
+        repeater: string | null;
+        createdAt: string;
+      }
     | undefined;
 
   if (!customer) {

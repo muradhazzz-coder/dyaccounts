@@ -119,6 +119,21 @@ export default async function AdminCustomersPage({ searchParams }: CustomersPage
                   <MiniStat label="طلبات معلقة" value={String(customer.pendingRequests)} />
                 </div>
 
+                <div className="mt-4 grid gap-3 md:grid-cols-2">
+                  <div className="rounded-2xl border border-line bg-slate-50 p-4">
+                    <p className="text-sm text-slate-500">رقم الهاتف</p>
+                    <p className="mt-2 text-base font-bold text-slate-900">
+                      {customer.phone || "غير مضاف"}
+                    </p>
+                  </div>
+                  <div className="rounded-2xl border border-line bg-slate-50 p-4">
+                    <p className="text-sm text-slate-500">الربيتر</p>
+                    <p className="mt-2 text-base font-bold text-slate-900">
+                      {customer.repeater || "غير مضاف"}
+                    </p>
+                  </div>
+                </div>
+
                 <div className="mt-5 grid gap-5 xl:grid-cols-2">
                   <SubSection title="العمليات المالية">
                     <div className="grid gap-4">
@@ -171,6 +186,20 @@ export default async function AdminCustomersPage({ searchParams }: CustomersPage
                         label="اسم المستخدم"
                         placeholder="اسم المستخدم"
                         defaultValue={customer.username}
+                      />
+                      <TextInput
+                        name="phone"
+                        label="رقم الهاتف"
+                        placeholder="رقم الهاتف"
+                        defaultValue={customer.phone || ""}
+                        required={false}
+                      />
+                      <TextInput
+                        name="repeater"
+                        label="الربيتر"
+                        placeholder="اسم الربيتر"
+                        defaultValue={customer.repeater || ""}
+                        required={false}
                       />
                       <TextInput
                         name="newPassword"

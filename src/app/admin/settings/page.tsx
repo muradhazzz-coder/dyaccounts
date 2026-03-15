@@ -52,6 +52,8 @@ export default async function AdminSettingsPage({ searchParams }: SettingsPagePr
             <form action={createCustomerAction} className="grid gap-4">
               <input type="hidden" name="redirectTo" value="/admin/settings" />
               <TextInput name="fullName" label="اسم الزبون" placeholder="مثال: أحمد علي" />
+              <TextInput name="phone" label="رقم الهاتف" placeholder="مثال: 07701234567" required={false} />
+              <TextInput name="repeater" label="الربيتر" placeholder="اكتب اسم الربيتر" required={false} />
               <TextInput name="username" label="اسم المستخدم" placeholder="مثال: ahmad1" />
               <TextInput name="password" label="كلمة المرور" type="password" placeholder="اكتب كلمة المرور" />
               <button type="submit" className={primaryButtonClass}>

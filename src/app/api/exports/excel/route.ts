@@ -18,6 +18,8 @@ export async function GET() {
     data.customers.map((customer) => ({
       "اسم الزبون": customer.fullName,
       "اسم المستخدم": customer.username,
+      "رقم الهاتف": customer.phone ?? "",
+      "الربيتر": customer.repeater ?? "",
       "إجمالي الموافق عليه": customer.totalApproved,
       "إجمالي المدفوع": customer.totalPaid,
       "الدين الحالي": customer.currentDebt,

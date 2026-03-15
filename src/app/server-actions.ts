@@ -58,11 +58,15 @@ export async function createCustomerAction(formData: FormData) {
       fullName: z.string().trim().min(2),
       username: z.string().trim().min(3),
       password: z.string().min(5),
+      phone: z.string().trim().optional(),
+      repeater: z.string().trim().optional(),
     })
     .parse({
       fullName: formData.get("fullName"),
       username: formData.get("username"),
       password: formData.get("password"),
+      phone: formData.get("phone") || undefined,
+      repeater: formData.get("repeater") || undefined,
     });
 
   if (getUserByUsername(parsed.username)) {
@@ -71,12 +75,14 @@ export async function createCustomerAction(formData: FormData) {
 
   runStatement(
     `
-      INSERT INTO users (role, username, password_hash, full_name)
-      VALUES ('customer', ?, ?, ?)
+      INSERT INTO users (role, username, password_hash, full_name, phone, repeater)
+      VALUES ('customer', ?, ?, ?, ?, ?)
     `,
     parsed.username,
     await bcrypt.hash(parsed.password, 10),
     parsed.fullName,
+    parsed.phone ?? null,
+    parsed.repeater ?? null,
   );
 
   revalidatePath("/admin");
@@ -93,11 +99,15 @@ export async function updateCustomerCredentialsAction(formData: FormData) {
       customerId: z.coerce.number().int().positive(),
       username: z.string().trim().min(3),
       newPassword: z.string().trim().optional(),
+      phone: z.string().trim().optional(),
+      repeater: z.string().trim().optional(),
     })
     .parse({
       customerId: formData.get("customerId"),
       username: formData.get("username"),
       newPassword: formData.get("newPassword") || undefined,
+      phone: formData.get("phone") || undefined,
+      repeater: formData.get("repeater") || undefined,
     });
 
   const customer = getUserById(parsed.customerId);
@@ -117,10 +127,12 @@ export async function updateCustomerCredentialsAction(formData: FormData) {
   runStatement(
     `
       UPDATE users
-      SET username = ?
+      SET username = ?, phone = ?, repeater = ?
       WHERE id = ? AND role = 'customer'
     `,
     parsed.username,
+    parsed.phone ?? null,
+    parsed.repeater ?? null,
     parsed.customerId,
   );
 

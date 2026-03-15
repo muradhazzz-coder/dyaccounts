@@ -29,6 +29,17 @@ export default async function CustomerPage() {
         </form>
       }
     >
+      <section className="mb-6 grid gap-4 md:grid-cols-2">
+        <div className="rounded-[1.5rem] border border-line bg-white/70 p-5">
+          <p className="text-sm text-slate-500">رقم الهاتف</p>
+          <p className="mt-2 text-lg font-bold text-slate-900">{data.customer.phone || "غير مضاف"}</p>
+        </div>
+        <div className="rounded-[1.5rem] border border-line bg-white/70 p-5">
+          <p className="text-sm text-slate-500">الربيتر</p>
+          <p className="mt-2 text-lg font-bold text-slate-900">{data.customer.repeater || "غير مضاف"}</p>
+        </div>
+      </section>
+
       <section className="grid gap-4 md:grid-cols-3">
         <StatCard label="إجمالي الدين الحالي" value={formatIqd(data.summary.currentDebt)} hint="هذا هو المبلغ المتبقي عليك بعد كل التسديدات." />
         <StatCard label="إجمالي الرصيد الموافق عليه" value={formatIqd(data.summary.totalApproved)} hint="كل طلب تمت الموافقة عليه يضاف إلى هذا المجموع." />
