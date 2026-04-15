@@ -157,6 +157,18 @@ export type CustomerExportRecord = {
   currentDebt: number;
 };
 
+export type CustomerOperationRecord = {
+  id: number;
+  table: "credit_requests" | "payments";
+  amount: number;
+  status: "pending" | "approved" | "rejected" | null;
+  source: "request" | "manual" | null;
+  paymentKind: "payment" | "clear" | null;
+  note: string | null;
+  createdAt: string;
+  reviewedAt: string | null;
+};
+
 export function getUserByUsername(username: string) {
   return getDb()
     .prepare("SELECT * FROM users WHERE username = ? LIMIT 1")
@@ -357,6 +369,71 @@ export function getExportData() {
     requests,
     payments,
   };
+}
+
+export function getCustomerOperationHistory(customerId: number) {
+  const database = getDb();
+
+  return database
+    .prepare(
+      `
+      SELECT
+        id,
+        'credit_requests' as table_name,
+        amount,
+        status,
+        source,
+        NULL as payment_kind,
+        note,
+        created_at as createdAt,
+        reviewed_at as reviewedAt
+      FROM credit_requests
+      WHERE customer_id = ?
+
+      UNION ALL
+
+      SELECT
+        id,
+        'payments' as table_name,
+        amount,
+        NULL as status,
+        NULL as source,
+        kind as payment_kind,
+        note,
+        created_at as createdAt,
+        NULL as reviewedAt
+      FROM payments
+      WHERE customer_id = ?
+
+      ORDER BY createdAt DESC, id DESC
+    `,
+    )
+    .all(customerId, customerId)
+    .map((row) => {
+      const typed = row as {
+        id: number;
+        table_name: "credit_requests" | "payments";
+        amount: number;
+        status: "pending" | "approved" | "rejected" | null;
+        source: "request" | "manual" | null;
+        payment_kind: "payment" | "clear" | null;
+        note: string | null;
+        createdAt: string;
+        reviewedAt: string | null;
+      };
+
+      return {
+        id: typed.id,
+        table: typed.table_name,
+        amount: typed.amount,
+        status: typed.status,
+        source: typed.source,
+        paymentKind: typed.payment_kind,
+        note: typed.note,
+        createdAt: typed.createdAt,
+        reviewedAt: typed.reviewedAt,
+      };
+    }) as CustomerOperationRecord[];
 }
 
 export function getCustomerDashboardData(customerId: number) {

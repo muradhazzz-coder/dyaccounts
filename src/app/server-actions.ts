@@ -255,6 +255,15 @@ export async function recordPaymentAction(formData: FormData) {
       note: formData.get("note") || undefined,
     });
 
+  const currentDebt = getCustomerDebt(parsed.customerId);
+  if (currentDebt <= 0) {
+    redirect(`${redirectTo}?paymentError=no-debt`);
+  }
+
+  if (parsed.amount > currentDebt) {
+    redirect(`${redirectTo}?paymentError=exceeds-debt`);
+  }
+
   runStatement(
     `
       INSERT INTO payments (customer_id, amount, kind, note, recorded_by)
@@ -270,6 +279,32 @@ export async function recordPaymentAction(formData: FormData) {
   revalidatePath("/customer");
   revalidatePath("/admin/customers");
   redirect(redirectTo);
+}
+
+export async function deleteCustomerOperationAction(formData: FormData) {
+  await requireAdmin();
+  const redirectTo = resolveAdminRedirect(formData, "/admin/customers");
+  const parsed = z
+    .object({
+      operationId: z.coerce.number().int().positive(),
+      tableName: z.enum(["credit_requests", "payments"]),
+    })
+    .parse({
+      operationId: formData.get("operationId"),
+      tableName: formData.get("tableName"),
+    });
+
+  if (parsed.tableName === "credit_requests") {
+    runStatement("DELETE FROM credit_requests WHERE id = ?", parsed.operationId);
+  } else {
+    runStatement("DELETE FROM payments WHERE id = ?", parsed.operationId);
+  }
+
+  revalidatePath("/admin");
+  revalidatePath("/admin/customers");
+  revalidatePath("/admin/reports");
+  revalidatePath("/customer");
+  redirect(`${redirectTo}?operationDeleted=1`);
 }
 
 export async function clearDebtAction(formData: FormData) {
